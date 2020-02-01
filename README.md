@@ -5,11 +5,14 @@ k8s-util &mdash; Kubernetes (K8S) Utility
 About
 -----
 
-This is a small GNU bash based utility for managing access to a
-[Kubernetes (K8S)](https//kubernetes.io) cluster. It allows you to
-create/delete a custom namespace, create/delete namespace/cluster
+This is a small GNU bash based utility for simplifying the management of
+access to a [Kubernetes (K8S)](https//kubernetes.io) cluster. It allows
+you to create/delete a custom namespace, create/delete namespace/cluster
 administrator service accounts and generate the `$KUBECONFIG` YAML
-snippets for using those service accounts.
+snippets for using those service accounts. This is handy because the
+initial bootstrapping of Kubernetes access (to the cluster or just a
+namespace) is a standard task and especially should not be part of any
+Helm chart.
 
 Installation
 ------------
