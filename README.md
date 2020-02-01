@@ -42,7 +42,7 @@ $ KUBECONFIG=~/.kubeconfig-sample kubectl version
 License
 -------
 
-Copyright (c) 2019-2020 Dr. Ralf S. Engelschall (http://engelschall.com/)
+Copyright &copy; 2019-2020 Dr. Ralf S. Engelschall (http://engelschall.com/)
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
