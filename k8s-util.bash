@@ -284,6 +284,11 @@ cmd_kubeconfig () {
         #   (for just switching contexts)
         cat <(conf kubeconfig-stub)
     else
+        #   ensure the required tool is available
+        if [[ -z "$(which jq)" ]]; then
+            fatal "require jq(1) in \$PATH"
+        fi
+
         #   determine K8S API service URL
         verbose "determine Kubernetes API service URL"
         local ctx=$(kubectl config current-context)
@@ -308,6 +313,11 @@ cmd_kubeconfig () {
             token="$token" context="$context")
     fi
 }
+
+#   ensure the required tool is available
+if [[ -z "$(which kubectl)" ]]; then
+    fatal "require kubectl(1) in \$PATH"
+fi
 
 #   dispatch according to command
 if [[ $# -eq 0 ]]; then
