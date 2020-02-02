@@ -83,7 +83,7 @@ To establish your local Docker client environment, use:
     $ cp <path-to-client-key>  $DOCKER_CERT_PATH/key.pem
     ```
 
-  - For remote access in msg Project Server (PS) contexts
+  - For remote access in [msg Project Server (PS)](https://ps.msg.team/) contexts
     (this requires SSH access to the server to automatically
     download the certificate/key files):
 
@@ -93,7 +93,7 @@ To establish your local Docker client environment, use:
 
 ### Establish Kubernetes Client Environment
 
-To establish your local Kubernetes environment use:
+To establish your local Kubernetes environment, use:
 
   - For standard contexts (via existing `~/.kube/config`):
 
@@ -101,25 +101,25 @@ To establish your local Kubernetes environment use:
     $ k8s-util env-k8s
     ```
 
-  - For custom contexts (via custom Kubernetes access configuration):
+  - For custom contexts (via custom Kubernetes access configuration file):
 
     ```sh
     $ k8s-util env-k8s <kubeconfig-file>
     ```
 
-  - For msg Project Server (PS) contexts (where `<hostname>` is the
-    hostname of the msg Project Server instance) where the K3S Kubernetes
-    stack was installed with `docker-stack install ase-k3s` beforehand
-    and <username> can be either `admin` or `root`:
+  - For [msg Project Server (PS)](https://ps.msg.team/) contexts (where `<hostname>` is the
+    hostname of the msg Project Server instance) where the K3S
+    Kubernetes stack (`ase-k3s`) was installed with `docker-stack
+    install ase-k3s` beforehand and `<username>` can be either the
+    K8S-external user `admin` or the K8S-internal user `root`:
 
     ```sh
-    $ k8s-util env-kubernetes <hostname> [<username> [<context>]]
+    $ k8s-util env-kubernetes <hostname> [<username>]
     ```
 
 ### Create Cluster Administration Service Account
 
-The `k8s-util.bash` script allows you to create
-a true internal Kubernetes cluster administrator service account:
+To create an internal Kubernetes cluster administrator service account, use:
 
   - For regular Kubernetes contexts:
 
@@ -128,9 +128,10 @@ a true internal Kubernetes cluster administrator service account:
     $ k8s-util kubeconfig kube-system root root >~/.kubeconfig-root
     ```
 
-  - For msg Project Server (PS) contexts where the K3S Kubernetes stack was
-    installed with `docker-stack install ase-k3s` beforehand, the `root`
-    service account is already pre-established and you just have to execute:
+  - For [msg Project Server (PS)](https://ps.msg.team/) contexts where
+    the K3S Kubernetes stack (`ase-k3s`) was installed with `docker-stack
+    install ase-k3s` beforehand, the `root` service account is already
+    pre-established and you just have to execute:
 
     ```
     $ k8s-util kubeconfig kube-system root root >~/.kubeconfig-root
@@ -138,9 +139,9 @@ a true internal Kubernetes cluster administrator service account:
 
 ### Create Custom Namespace
 
-Create a custom namespace `sample` and corresponding namespace
+To create a custom namespace `sample` and corresponding namespace
 administration service account `sample` in order to deploy an
-application into it later:
+application into it later, use:
 
 ```
 $ k8s-util namespace sample create
@@ -150,8 +151,8 @@ $ k8s-util kubeconfig sample sample sample >~/.kubeconfig-sample
 
 ### Generate KUBECONFIG Configurations
 
-In order to access the Kubernetes cluster through one or more particular
-service accounts, assemble the `$KUBECONFIG` configurations:
+To access the Kubernetes cluster through one or more particular
+service accounts, assemble the `$KUBECONFIG` configurations with:
 
 ```
 $ k8s-util kubeconfig-stub >~/.kubeconfig-stub
