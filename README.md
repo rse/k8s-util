@@ -7,7 +7,7 @@ About
 
 This is a small utility for simplifying the management of access to a
 [Kubernetes (K8S)](https://kubernetes.io) cluster from an arbitrary
-GNU/Linux system. In particular, it allows you to...
+GNU/Linux (x64) system. In particular, it allows you to...
 
 - establish local a **docker(1)** and **docker-compose(1)** based Docker client environment,
   because developing and testing applications is usually done on just Docker.
