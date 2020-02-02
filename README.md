@@ -51,6 +51,10 @@ $ git clone https://github.com/rse/k8s-util
 $ source k8s-util/k8s-util.bash
 ```
 
+(NOTICE: the `k8s-util.bash` script has to be `source`ed from within GNU
+Bash, because its `env-docker` and `env-k8s` commands have to be able to
+augment your shell environment with additional environment variables)
+
 Usage
 -----
 
