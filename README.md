@@ -39,6 +39,10 @@ are primarily driven by four command-line client programs:
 | Docker     | **docker(1)**            | **docker-compose(1)**   |
 | Kubernetes | **kubectl(1)**           | **helm(1)**             |
 
+As a consequence, when developing and deploying in a Kubernetes
+environment, those four client programs and their configurations are
+essential. This is what **k8s-util(1)** deals with.
+
 Installation
 ------------
 
