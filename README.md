@@ -5,9 +5,10 @@ k8s-util &mdash; Kubernetes (K8S) Utility
 About
 -----
 
-This is a small GNU bash based utility for simplifying the management
-of access to a [Kubernetes (K8S)](https://kubernetes.io) cluster from an
-arbitrary GNU/Linux system. In particular, it allows you to...
+This is a small [GNU Bash](https://www.gnu.org/software/bash/) based
+utility for simplifying the management of access to a [Kubernetes
+(K8S)](https://kubernetes.io) cluster from an arbitrary GNU/Linux
+system. In particular, it allows you to...
 
 - establish local a **docker(1)** and **docker-compose(1)** based Docker client environment,
   because developing and testing applications is usually done on just Docker.
@@ -25,7 +26,7 @@ arbitrary GNU/Linux system. In particular, it allows you to...
   because applications should be deployed into their own dedicated Kubernetes namespace.
 
 - generate the `$KUBECONFIG` configurations for using service accounts,
-  because kubectl(1) and helm(1) require those standardized access configurations.
+  because **kubectl(1)** and **helm(1)** require those standardized access configurations.
 
 Short Background
 ----------------
@@ -35,8 +36,8 @@ are primarily driven by four command-line client programs:
 
 |            | low-level<br/>(commands) | high-level<br/>(stacks) |
 |----------- | ------------------------ | ----------------------- |
-| Docker     | `docker`                 | `docker-compose`        |
-| Kubernetes | `kubectl`                | `helm`                  |
+| Docker     | **docker(1)**            | **docker-compose(1)**   |
+| Kubernetes | **kubectl(1)**           | **helm(1)**             |
 
 Installation
 ------------
