@@ -5,10 +5,9 @@ k8s-util &mdash; Kubernetes (K8S) Utility
 About
 -----
 
-This is a small [GNU Bash](https://www.gnu.org/software/bash/) based
-utility for simplifying the management of access to a [Kubernetes
-(K8S)](https://kubernetes.io) cluster from an arbitrary GNU/Linux
-system. In particular, it allows you to...
+This is a small utility for simplifying the management of access to a
+[Kubernetes (K8S)](https://kubernetes.io) cluster from an arbitrary
+GNU/Linux system. In particular, it allows you to...
 
 - establish local a **docker(1)** and **docker-compose(1)** based Docker client environment,
   because developing and testing applications is usually done on just Docker.
@@ -50,6 +49,9 @@ Installation
 $ git clone https://github.com/rse/k8s-util
 $ make install [DESTDIR=/path] [PREFIX=/path]
 ```
+
+NOTICE: **k8s-util(1)** requires [bash(1)](https://www.gnu.org/software/bash/)),
+[curl(1)](https://curl.haxx.se/) and [jq(1)](https://stedolan.github.io/jq/) under run-time.
 
 Usage
 -----
