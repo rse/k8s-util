@@ -1,45 +1,163 @@
 
-k8s-util &mdash; Kubernetes (K8S) Utility
-=========================================
+k8s-util &mdash; Kubernetes (K8S) Utilities
+===========================================
 
 About
 -----
 
-This is a small GNU bash based utility for simplifying the management of
-access to a [Kubernetes (K8S)](https//kubernetes.io) cluster. It allows
-you to create/delete a custom namespace, create/delete namespace/cluster
-administrator service accounts and generate the `$KUBECONFIG` YAML
-snippets for using those service accounts. This is handy because the
-initial bootstrapping of Kubernetes access (to the cluster or just a
-namespace) is a standard task and especially should not be part of any
-Helm chart.
+These are small GNU bash based utility scripts for simplifying the
+management of access to a [Kubernetes (K8S)](https//kubernetes.io)
+cluster from an arbitrary GNU/Linux system. In particular, it allows you
+to...
+
+- establish local a docker(1) and docker-compose(1) based Docker client environment,
+  because developing and testing applications is usually done on just Docker.
+
+- establish a kubectl(1) and helm(1) based Kubernetes client environment,
+  because running applications finally requires access to a Kubernetes cluster.
+
+- create/delete cluster administrator service account,
+  because most Kubernetes clusters initially just provide an externally
+  managed administrator account for bootstrapping, but Kubernetes Dashboard and other
+  contexts require a true internally managed administrator account.
+
+- create/delete a custom namespace and
+  create/delete namespace administrator service account,
+  because applications should be deployed into their own dedicated Kubernetes namespace.
+
+- generate the `$KUBECONFIG` configurations for using service accounts,
+  because kubectl(1) and helm(1) require those standardized access configurations.
+
+Short Background
+----------------
+
+On the application development side, the Docker and Kubernetes worlds
+are primarily driven by four command-line client programs:
+
+|            | low-level<br/>(commands) | high-level<br/>(stacks) |
+|----------- | ------------------------ | ----------------------- |
+| Docker     | `docker`                 | `docker-compose`        |
+| Kubernetes | `kubectl`                | `helm`                  |
 
 Installation
 ------------
 
 ```
-$ curl -L -o k8s-util https://raw.githubusercontent.com/rse/k8s-util/master/k8s-util.bash && \
-  chmod 755 k8s-util
+$ git clone https://github.com/rse/k8s-util
+$ source k8s-util/k8s-util.bash
 ```
 
 Usage
 -----
 
-Create a cluster administration service account `root`:
+### Establish Docker Client Environment
 
-```
-$ k8s-util cluster-admin kube-system root create
-$ k8s-util kubeconfig kube-system root root >~/.kubeconfig-root
-$ KUBECONFIG=~/.kubeconfig-root kubectl version
-```
+To establish your local Docker environment use:
 
-Create a namespace `sample` and corresponding namespace administration service account `sample`:
+  - For local contexts (via `/var/run/docker.sock`):
+
+    ```sh
+    $ k8s-util env-docker
+    ```
+
+  - For remote contexts (via HTTP):
+
+    ```sh
+    $ k8s-util env-docker <hostname> tcp
+    ```
+
+  - For remote contexts (via HTTPS):
+
+    ```sh
+    $ k8s-util env-docker <hostname> tls
+    $ cp <path-to-ca-cert>     $DOCKER_CERT_PATH/ca.pem
+    $ cp <path-to-client-cert> $DOCKER_CERT_PATH/cert.pem
+    $ cp <path-to-client-key>  $DOCKER_CERT_PATH/key.pem
+    ```
+
+  - For remote msg Project Server (PS) contexts:
+
+    ```sh
+    $ k8s-util env-docker <hostname> ps
+    ```
+
+### Establish Kubernetes Client Environment
+
+To establish your local Kubernetes environment use:
+
+  - For standard contexts (via existing `~/.kube/config`):
+
+    ```sh
+    $ k8s-util env-k8s
+    ```
+
+  - For custom contexts (via custom Kubernetes access configuration):
+
+    ```sh
+    $ k8s-util env-k8s <kubeconfig-file>
+    ```
+
+  - For msg Project Server (PS) contexts (where `<hostname>` is the
+    hostname of the msg Project Server instance) where the K3S Kubernetes
+    stack was installed with `docker-stack install ase-k3s` beforehand
+    and <username> can be either `admin` or `root`:
+
+    ```sh
+    $ k8s-util env-kubernetes <hostname> [<username> [<context>]]
+    ```
+
+### Create Cluster Administration Service Account
+
+The `k8s-util.bash` script allows you to create
+a true internal Kubernetes cluster administrator service account:
+
+  - For regular Kubernetes contexts:
+
+    ```
+    $ k8s-util cluster-admin kube-system root create
+    $ k8s-util kubeconfig kube-system root root >~/.kubeconfig-root
+    ```
+
+  - For msg Project Server (PS) contexts where the K3S Kubernetes stack was
+    installed with `docker-stack install ase-k3s` beforehand, the `root`
+    service account is already pre-established and you just have to execute:
+
+    ```
+    $ k8s-util kubeconfig kube-system root root >~/.kubeconfig-root
+    ```
+
+### Create Custom Namespace
+
+Create a custom namespace `sample` and corresponding namespace
+administration service account `sample` in order to deploy an
+application into it later:
 
 ```
 $ k8s-util namespace sample create
 $ k8s-util namespace-admin sample sample create
-$ k8s-util kubeconfig sample sample sample >.kubeconfig-sample
-$ KUBECONFIG=~/.kubeconfig-sample kubectl version
+$ k8s-util kubeconfig sample sample sample >~/.kubeconfig-sample
+```
+
+### Generate KUBECONFIG Configurations
+
+In order to access the Kubernetes cluster through one or more particular
+service accounts, assemble the `$KUBECONFIG` configurations:
+
+```
+$ k8s-util kubeconfig-stub >~/.kubeconfig-stub
+$ k8s-util kubeconfig kube-system root root >~/.kubeconfig-root
+$ k8s-util kubeconfig sample sample sample >~/.kubeconfig-sample
+```
+
+Then use them like this:
+
+```
+$ export KUBECONFIG=~/.kubeconfig-stub.yaml:~/.kubeconfig-root.yaml:~/.kubeconfig-sample.yaml
+$ kubectl context use-context root
+$ kubectl -o yaml version
+$ kubectl get nodes
+$ kubectl -n kube-system get all
+$ kubectl --context sample get all
 ```
 
 License
