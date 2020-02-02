@@ -41,6 +41,9 @@ fatal () {
     exit 1
 }
 
+#   path to configuration file
+my_config="$(dirname ${BASH_SOURCE})/k8s-util.yaml"
+
 #   fetch configuration
 conf () {
     local id="$1"
@@ -52,7 +55,7 @@ conf () {
         cmd="$cmd -e \"s;{{${var}}};${val};g\""
     done
     local tmpfile="${TMPDIR-/tmp}/k8s-util.$$.conf.tmp"
-    eval "$cmd" <"$(dirname ${BASH_SOURCE})/k8s-util-cfg.yaml" >$tmpfile
+    eval "$cmd" <$my_config >$tmpfile
     if [[ $verbosity == true ]]; then
         sed -e "s;^;-- | ;" <$tmpfile 1>&2
     fi
@@ -63,7 +66,7 @@ conf () {
 #   establish Docker environment
 cmd_env_docker () {
     #   a temporary storage area
-    local output="${TMPDIR-/tmp}/k8s-util.$$.env.docker.tmp"
+    local output="${TMPDIR-/tmp}/k8s-util.$$.tmp"
     cp /dev/null $output
 
     #   provisioning base directory
@@ -164,7 +167,7 @@ cmd_env_docker () {
 #   establish Kubernetes environment
 cmd_env_k8s () {
     #   a temporary storage area
-    local output="${TMPDIR-/tmp}/k8s-util.$$.env.k8s.tmp"
+    local output="${TMPDIR-/tmp}/k8s-util.$$.tmp"
     cp /dev/null $output
 
     #   provisioning base directory
@@ -386,12 +389,12 @@ if [[ $# -eq 0 ]]; then
     my_usage () {
         echo "k8s-util: USAGE: k8s-util $*" 1>&2
     }
-    my_usage "env-docker     [<hostname> tcp|tls|ps]"
-    my_usage "env-k8s        [<kubeconfig-file> | <hostname> [<username> [<context>]]]"
-    my_usage "namespace       <namespace> create|delete"
-    my_usage "cluster-admin   <namespace> <account> create|delete"
+    my_usage "env-docker [<hostname> tcp|tls|ps]"
+    my_usage "env-k8s [<kubeconfig-file> | <hostname> [<username> [<context>]]]"
+    my_usage "namespace <namespace> create|delete"
+    my_usage "cluster-admin <namespace> <account> create|delete"
     my_usage "namespace-admin <namespace> <account> create|delete"
-    my_usage "kubeconfig     [<namespace> <account> <context>]"
+    my_usage "kubeconfig [<namespace> <account> <context>]"
     exit 1
 fi
 verbosity=false
