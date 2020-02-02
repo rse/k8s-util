@@ -40,7 +40,7 @@ install: k8s-util.1
 	    install -c -m 755 tmpfile $(DESTDIR)$(BINDIR)/k8s-util && \
 	    rm -f tmpfile
 	install -d $(DESTDIR)$(ETCDIR)
-	install -c -m 755 k8s-util.yaml $(DESTDIR)$(BINDIR)/k8s-util.yaml
+	install -c -m 755 k8s-util.yaml $(DESTDIR)$(ETCDIR)/k8s-util.yaml
 	install -d $(DESTDIR)$(MANDIR)
 	install -c -m 755 k8s-util.1 $(DESTDIR)$(MANDIR)/k8s-util.1
 
