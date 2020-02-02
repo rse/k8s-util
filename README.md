@@ -12,7 +12,7 @@ GNU/Linux (x64) system. In particular, it allows you to...
 - establish local a **docker(1)** and **docker-compose(1)** based Docker client environment,
   because developing and testing applications is usually done on just Docker.
 
-- establish a **kubectl(1)** and **helm(1)** based Kubernetes client environment,
+- establish a **kubectl(1)**, **kubensx(1)** and **helm(1)** based Kubernetes client environment,
   because running applications finally requires access to a Kubernetes cluster.
 
 - create/delete cluster administrator service account,
@@ -165,9 +165,9 @@ To access the Kubernetes cluster through one or more particular
 service accounts, assemble the `$KUBECONFIG` configurations with:
 
 ```
-$ k8s-util kubeconfig-stub >~/.kubeconfig-stub
-$ k8s-util kubeconfig kube-system root root >~/.kubeconfig-root
-$ k8s-util kubeconfig sample sample sample >~/.kubeconfig-sample
+$ k8s-util kubeconfig-stub >~/.kubeconfig-stub.yaml
+$ k8s-util kubeconfig kube-system root root >~/.kubeconfig-root.yaml
+$ k8s-util kubeconfig sample sample sample >~/.kubeconfig-sample.yaml
 ```
 
 Then use them like this:
