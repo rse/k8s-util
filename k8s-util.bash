@@ -185,15 +185,27 @@ cmd_env_k8s () {
     fi
 
     #   check for existence of kubectl(1) and helm(1)
+    local which_kubensx=$(which kubensx)
     local which_kubectl=$(which kubectl)
     local which_helm=$(which helm)
     local which_jq=$(which jq)
 
     #   optionally download kubectl(1) and helm(1)
-    if [[ -z "$which_kubectl" || -z "$which_helm" || -z "$which_jq" ]]; then
+    if [[ -z "$which_kubensx" || -z "$which_kubectl" || -z "$which_helm" || -z "$which_jq" ]]; then
         #   ensure curl(1) is available
         if [[ -z "$(which curl)" ]]; then
             fatal "require curl(1) utility to download files"
+        fi
+
+        #   download kubensx(1)
+        if [[ -z "$which_kubensx" ]]; then
+            local kubensx_version=$(curl -sSkL https://github.com/shyiko/kubensx/releases | \
+                egrep 'releases/tag/[0-9.]*"' | sed -e 's;^.*releases/tag/;;' -e 's;".*$;;' | head -1)
+            verbose "downloading kubensx(1) CLI (version $kubensx_version)"
+            curl -sSkL -o $my_basedir/bin/kubensx $(printf "%s%s" \
+                https://github.com/shyiko/kubensx/releases/download/ \
+                ${kubensx_version}/kubensx-${kubensx_version}-linux-amd64)
+            chmod 755 $my_basedir/bin/kubensx
         fi
 
         #   download kubectl(1)
@@ -232,6 +244,7 @@ cmd_env_k8s () {
     fi
 
     #   install Bash tab completions
+    echo "source <(KUBECONFIG=/dev/null kubensx completion bash);" >>$output
     echo "source <(KUBECONFIG=/dev/null kubectl completion bash);" >>$output
     echo "source <(KUBECONFIG=/dev/null helm completion bash);" >>$output
 
