@@ -51,30 +51,30 @@ $ git clone https://github.com/rse/k8s-util
 $ source k8s-util/k8s-util.bash
 ```
 
-(NOTICE: the `k8s-util.bash` script has to be `source`ed from within GNU
+NOTICE: the `k8s-util.bash` script has to be `source`ed from within GNU
 Bash, because its `env-docker` and `env-k8s` commands have to be able to
-augment your shell environment with additional environment variables)
+augment your shell environment with additional environment variables.
 
 Usage
 -----
 
 ### Establish Docker Client Environment
 
-To establish your local Docker environment use:
+To establish your local Docker client environment, use:
 
-  - For local contexts (via `/var/run/docker.sock`):
+  - For local access (via `/var/run/docker.sock`):
 
     ```sh
     $ k8s-util env-docker
     ```
 
-  - For remote contexts (via HTTP):
+  - For remote access (via HTTP):
 
     ```sh
     $ k8s-util env-docker <hostname> tcp
     ```
 
-  - For remote contexts (via HTTPS):
+  - For remote access (via HTTPS):
 
     ```sh
     $ k8s-util env-docker <hostname> tls
@@ -83,7 +83,9 @@ To establish your local Docker environment use:
     $ cp <path-to-client-key>  $DOCKER_CERT_PATH/key.pem
     ```
 
-  - For remote msg Project Server (PS) contexts:
+  - For remote access in msg Project Server (PS) contexts
+    (this requires SSH access to the server to automatically
+    download the certificate/key files):
 
     ```sh
     $ k8s-util env-docker <hostname> ps
