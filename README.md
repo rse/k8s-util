@@ -52,6 +52,9 @@ $ make install [DESTDIR=/path] [PREFIX=/path]
 
 NOTICE: **k8s-util(1)** requires [bash(1)](https://www.gnu.org/software/bash/)),
 [curl(1)](https://curl.haxx.se/) and [jq(1)](https://stedolan.github.io/jq/) under run-time.
+The additionally required tools docker(1), docker-compose(1), kubectl(1) and
+helm(1) are automatically downloaded into `$HOME/.k8s-util/bin/` if requested
+by the `env-docker` or `env-k8s` commands.
 
 Usage
 -----
