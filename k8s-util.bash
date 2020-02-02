@@ -80,7 +80,7 @@ cmd_env_docker () {
 
     #   optionally extend the search path
     if [[ ! "$PATH" =~ (^|:)"$my_basedir/bin"(:|$) ]]; then
-        echo "PATH=\"$my_basedir/bin:\$PATH\"" >>$output
+        echo "PATH=\"$my_basedir/bin:\$PATH\";" >>$output
     fi
 
     #   check for existence of docker(1) and docker-compose(1)
@@ -126,16 +126,16 @@ cmd_env_docker () {
         #   set docker(1) environment variables
         if [[ $kind == "tcp" ]]; then
             #   remote access via TCP
-            echo "export DOCKER_HOST=\"tcp://$server:2375\"" >>$output
+            echo "export DOCKER_HOST=\"tcp://$server:2375\";" >>$output
         elif [[ $kind == "tls" || $kind == "ps" ]]; then
             #   remote access via TLS
-            echo "export DOCKER_HOST=\"tcp://$server:2376\"" >>$output
-            echo "export DOCKER_TLS=1" >>$output
+            echo "export DOCKER_HOST=\"tcp://$server:2376\";" >>$output
+            echo "export DOCKER_TLS=1;" >>$output
             if [[ -z "$DOCKER_TLS_VERIFY" ]]; then
-                echo "export DOCKER_TLS_VERIFY=1" >>$output
+                echo "export DOCKER_TLS_VERIFY=1;" >>$output
             fi
             if [[ -z "$DOCKER_CERT_PATH" ]]; then
-                echo "export DOCKER_CERT_PATH=\"$my_basedir/etc/docker\"" >>$output
+                echo "export DOCKER_CERT_PATH=\"$my_basedir/etc/docker\";" >>$output
                 DOCKER_CERT_PATH="$my_basedir/etc/docker"
             fi
             if [[ $kind == "ps" ]]; then
@@ -181,7 +181,7 @@ cmd_env_k8s () {
 
     #   optionally extend the search path
     if [[ ! "$PATH" =~ (^|:)"$my_basedir/bin"(:|$) ]]; then
-        echo "PATH=\"$my_basedir/bin:\$PATH\"" >>$output
+        echo "PATH=\"$my_basedir/bin:\$PATH\";" >>$output
     fi
 
     #   check for existence of kubectl(1) and helm(1)
@@ -232,13 +232,13 @@ cmd_env_k8s () {
     fi
 
     #   install Bash tab completions
-    echo "source <(KUBECONFIG=/dev/null kubectl completion bash)" >>$output
-    echo "source <(KUBECONFIG=/dev/null helm completion bash)" >>$output
+    echo "source <(KUBECONFIG=/dev/null kubectl completion bash);" >>$output
+    echo "source <(KUBECONFIG=/dev/null helm completion bash);" >>$output
 
     #   optionally provision for remote access
     if [[ $# -ge 1 ]]; then
         if [[ $# -eq 1 && -f "$1" ]]; then
-            echo "export KUBECONFIG=\"$1\"" >>$output
+            echo "export KUBECONFIG=\"$1\";" >>$output
         else
             #   provision for remote access in msg Project Server (PS) context
             local server=$1
@@ -246,7 +246,7 @@ cmd_env_k8s () {
             local contextname=${3-""}
 
             #   expose Kubernetes access configuration
-            echo "export KUBECONFIG=\"$my_basedir/etc/k8s/kubeconfig.yaml\"" >>$output
+            echo "export KUBECONFIG=\"$my_basedir/etc/k8s/kubeconfig.yaml\";" >>$output
 
             #   optionally fetch Kubernetes access configuration
             if [[ ! -f "$KUBECONFIG" ]]; then
