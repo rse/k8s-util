@@ -1,0 +1,38 @@
+.TH "K8S-UTIL" "1" "February 2020" "" ""
+.SH "NAME"
+\fBk8s-util\fR - Kubernetes (K8S) Utility
+.SH "SYNOPSIS"
+.P
+\fBeval\fR `\fBk8s-util\fR \fBenv-docker\fR \[lB]\fIhostname\fR \fBtcp\fR|\fBtls\fR|\fBps\fR\[rB]`
+.P
+\fBeval\fR `\fBk8s-util\fR \fBenv-k8s\fR \[lB]\fIkubeconfig-file\fR | \fIhostname\fR \[lB]\fIusername\fR \fB\fIcontext\fR\fR\[rB]\[rB]`
+.P
+\fBk8s-util\fR \[lB]\fB-v\fR\[rB] \fBnamespace\fR \fInamespace\fR \fBcreate\fR|\fBdelete\fR
+.P
+\fBk8s-util\fR \[lB]\fB-v\fR\[rB] \fBcluster-admin\fR \fInamespace\fR \fIaccount\fR \fBcreate\fR|\fBdelete\fR
+.P
+\fBk8s-util\fR \[lB]\fB-v\fR\[rB] \fBnamespace-admin\fR \fInamespace\fR \fIaccount\fR \fBcreate\fR|\fBdelete\fR
+.P
+\fBk8s-util\fR \[lB]\fB-v\fR\[rB] \fBkubeconfig\fR \fB\fInamespace\fR \fIaccount\fR \fIcontext\fR\fR
+.SH "DESCRIPTION"
+.P
+This is a small utility for simplifying the management of access to a Kubernetes (K8S) cluster from an arbitrary GNU/Linux system. In particular, it allows you to...
+.RS 0
+.IP \(bu 4
+establish local a \fBdocker(1)\fR and \fBdocker-compose(1)\fR based \fIDocker\fR client environment, because developing and testing applications is usually done on just \fIDocker\fR.
+.IP \(bu 4
+establish a \fBkubectl(1)\fR and \fBhelm(1)\fR based \fIKubernetes\fR client environment, because running applications finally requires access to a \fIKubernetes\fR cluster.
+.IP \(bu 4
+create/delete cluster administrator service account, because most \fIKubernetes\fR clusters initially just provide an externally managed administrator account for bootstrapping, but \fIKubernetes Dashboard\fR and other contexts require a true internally managed administrator account.
+.IP \(bu 4
+create/delete a custom namespace and create/delete namespace administrator service account, because applications should be deployed into their own dedicated \fIKubernetes\fR namespace.
+.IP \(bu 4
+generate the \fB$KUBECONFIG\fR configurations for using service accounts, because \fBkubectl(1)\fR and \fBhelm(1)\fR require those standardized access configurations.
+.RE 0
+
+.SH "HISTORY"
+.P
+The \fBk8s-util\fR(1) utility was developed between August 2019 and January 2020 for being able to easily manage access to a Kubernetes cluster.
+.SH "AUTHOR"
+.P
+Dr. Ralf S. Engelschall \fI\(larse@engelschall.com\(ra\fR

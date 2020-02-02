@@ -30,10 +30,8 @@ DESTDIR =
 
 all: k8s-util.1
 
-bootstrap:
+k8s-util.1: k8s-util.md
 	@if [ ! -d node_modules ]; then npm install remark-cli remark remark-man; fi
-
-k8s-util.1: bootstrap k8s-util.md
 	npx remark --use remark-man --output k8s-util.1 k8s-util.md
 
 install: k8s-util.1
