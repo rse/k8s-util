@@ -48,7 +48,7 @@ Installation
 
 ```
 $ git clone https://github.com/rse/k8s-util
-$ make install [PREFIX=/prefix]
+$ make install [DESTDIR=/path] [PREFIX=/path]
 ```
 
 Usage
