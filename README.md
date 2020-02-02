@@ -1,11 +1,11 @@
 
-k8s-util &mdash; Kubernetes (K8S) Utilities
-===========================================
+k8s-util &mdash; Kubernetes (K8S) Utility
+=========================================
 
 About
 -----
 
-These are small GNU bash based utility scripts for simplifying the
+This is a small GNU bash based utility script for simplifying the
 management of access to a [Kubernetes (K8S)](https//kubernetes.io)
 cluster from an arbitrary GNU/Linux system. In particular, it allows you
 to...
