@@ -187,9 +187,10 @@ cmd_env_k8s () {
     #   check for existence of kubectl(1) and helm(1)
     local which_kubectl=$(which kubectl)
     local which_helm=$(which helm)
+    local which_jq=$(which jq)
 
     #   optionally download kubectl(1) and helm(1)
-    if [[ -z "$which_kubectl" || -z "$which_helm" ]]; then
+    if [[ -z "$which_kubectl" || -z "$which_helm" || -z "$which_jq" ]]; then
         #   ensure curl(1) is available
         if [[ -z "$(which curl)" ]]; then
             fatal "require curl(1) utility to download files"
@@ -199,7 +200,7 @@ cmd_env_k8s () {
         if [[ -z "$which_kubectl" ]]; then
             local kubernetes_version=$(curl -sSkL \
                 https://storage.googleapis.com/kubernetes-release/release/stable.txt)
-            echo "k8s-util: downloading kubectl(1) CLI (version $kubernetes_version)" 1>&2
+            verbose "downloading kubectl(1) CLI (version $kubernetes_version)"
             curl -sSkL -o $my_basedir/bin/kubectl $(printf "%s%s" \
                 https://storage.googleapis.com/kubernetes-release/release/ \
                 ${kubernetes_version}/bin/linux/amd64/kubectl)
@@ -210,12 +211,23 @@ cmd_env_k8s () {
         if [[ -z "$which_helm" ]]; then
             local helm_version=$(curl -sSkL https://github.com/kubernetes/helm/releases | \
                 egrep 'releases/tag/v[0-9.]*"' | sed -e 's;^.*releases/tag/v;;' -e 's;".*$;;' | head -1)
-            echo "k8s-util: downloading helm(1) CLI (version $helm_version)" 1>&2
+            verbose "downloading helm(1) CLI (version $helm_version)"
             curl -sSkL $(printf "%s%s" \
                 https://get.helm.sh/ \
                 helm-v${helm_version}-linux-amd64.tar.gz) | \
                 tar -z -x -f - --strip-components=1 -C $my_basedir/bin linux-amd64/helm
             chmod 755 $my_basedir/bin/helm
+        fi
+
+        #   download jq(1)
+        if [[ -z "$which_jq" ]]; then
+            local jq_version=$(curl -sSkL https://github.com/stedolan/jq/releases | \
+                egrep 'releases/tag/jq-[0-9.]*"' | sed -e 's;^.*releases/tag/jq-;;' -e 's;".*$;;' | head -1)
+            verbose "downloading jq(1) CLI (version $jq_version)"
+            curl -sSkL -o $my_basedir/bin/jq $(printf "%s%s" \
+                https://github.com/stedolan/jq/releases/download/ \
+                jq-${jq_version}/jq-linux64)
+            chmod 755 $my_basedir/bin/jq
         fi
     fi
 
@@ -238,7 +250,7 @@ cmd_env_k8s () {
 
             #   optionally fetch Kubernetes access configuration
             if [[ ! -f "$KUBECONFIG" ]]; then
-                echo "k8s-util: fetching kubectl(1) access configuration" 1>&2
+                verbose "fetching kubectl(1) access configuration"
                 ssh -q -t root@$server docker-stack exec ase-k3s \
                     kubeconfig "${username}" "${contextname}" >"$my_basedir/etc/k8s/kubeconfig.yaml"
             fi
@@ -349,11 +361,6 @@ cmd_kubeconfig () {
         #   (for just switching contexts)
         cat <(conf kubeconfig-stub)
     else
-        #   ensure the required tool is available
-        if [[ -z "$(which jq)" ]]; then
-            fatal "require jq(1) in \$PATH"
-        fi
-
         #   determine K8S API service URL
         verbose "determine Kubernetes API service URL"
         local ctx=$(kubectl config current-context)
