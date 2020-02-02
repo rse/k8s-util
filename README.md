@@ -48,12 +48,8 @@ Installation
 
 ```
 $ git clone https://github.com/rse/k8s-util
-$ source k8s-util/k8s-util.bash
+$ make install [PREFIX=/prefix]
 ```
-
-NOTICE: the `k8s-util.bash` script has to be `source`ed from within GNU
-Bash, because its `env-docker` and `env-k8s` commands have to be able to
-augment your shell environment with additional environment variables.
 
 Usage
 -----
@@ -65,19 +61,19 @@ To establish your local Docker client environment, use:
   - For local access (via `/var/run/docker.sock`):
 
     ```sh
-    $ k8s-util env-docker
+    $ eval `k8s-util env-docker`
     ```
 
   - For remote access (via HTTP):
 
     ```sh
-    $ k8s-util env-docker <hostname> tcp
+    $ eval `k8s-util env-docker <hostname> tcp`
     ```
 
   - For remote access (via HTTPS):
 
     ```sh
-    $ k8s-util env-docker <hostname> tls
+    $ eval `k8s-util env-docker <hostname> tls`
     $ cp <path-to-ca-cert>     $DOCKER_CERT_PATH/ca.pem
     $ cp <path-to-client-cert> $DOCKER_CERT_PATH/cert.pem
     $ cp <path-to-client-key>  $DOCKER_CERT_PATH/key.pem
@@ -88,8 +84,12 @@ To establish your local Docker client environment, use:
     download the certificate/key files):
 
     ```sh
-    $ k8s-util env-docker <hostname> ps
+    $ eval `k8s-util env-docker <hostname> ps`
     ```
+
+NOTICE: the `k8s-util env-docker` output has to be `eval`uated from
+within GNU Bash, because the command augments your shell environment
+with additional environment variables.
 
 ### Establish Kubernetes Client Environment
 
@@ -98,13 +98,13 @@ To establish your local Kubernetes environment, use:
   - For standard contexts (via existing `~/.kube/config`):
 
     ```sh
-    $ k8s-util env-k8s
+    $ eval `k8s-util env-k8s`
     ```
 
   - For custom contexts (via custom Kubernetes access configuration file):
 
     ```sh
-    $ k8s-util env-k8s <kubeconfig-file>
+    $ eval `k8s-util env-k8s <kubeconfig-file>`
     ```
 
   - For [msg Project Server (PS)](https://ps.msg.team/) contexts (where `<hostname>` is the
@@ -114,8 +114,12 @@ To establish your local Kubernetes environment, use:
     K8S-external user `admin` or the K8S-internal user `root`:
 
     ```sh
-    $ k8s-util env-kubernetes <hostname> [<username>]
+    $ eval `k8s-util env-kubernetes <hostname> [<username>]`
     ```
+
+NOTICE: the `k8s-util env-k8s` output has to be `eval`uated from
+within GNU Bash, because the command augments your shell environment
+with additional environment variables.
 
 ### Create Cluster Administration Service Account
 
