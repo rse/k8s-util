@@ -5,15 +5,14 @@ k8s-util &mdash; Kubernetes (K8S) Utility
 About
 -----
 
-This is a small GNU bash based utility script for simplifying the
-management of access to a [Kubernetes (K8S)](https//kubernetes.io)
-cluster from an arbitrary GNU/Linux system. In particular, it allows you
-to...
+This is a small GNU bash based utility for simplifying the management
+of access to a [Kubernetes (K8S)](https://kubernetes.io) cluster from an
+arbitrary GNU/Linux system. In particular, it allows you to...
 
-- establish local a docker(1) and docker-compose(1) based Docker client environment,
+- establish local a **docker(1)** and **docker-compose(1)** based Docker client environment,
   because developing and testing applications is usually done on just Docker.
 
-- establish a kubectl(1) and helm(1) based Kubernetes client environment,
+- establish a **kubectl(1)** and **helm(1)** based Kubernetes client environment,
   because running applications finally requires access to a Kubernetes cluster.
 
 - create/delete cluster administrator service account,
