@@ -118,6 +118,9 @@ roleRef:
 apiVersion: v1
 kind: Config
 current-context:
+contexts:
+clusters:
+users:
 
 %!kubeconfig
 ---
