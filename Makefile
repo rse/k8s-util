@@ -36,14 +36,14 @@ k8s-util.1: k8s-util.md
 
 install: k8s-util.1
 	install -d $(DESTDIR)$(BINDIR)
+	install -d $(DESTDIR)$(ETCDIR)
+	install -d $(DESTDIR)$(MANDIR)
 	sed -e 's;^\(my_config=\).*;\1"$(ETCDIR)/k8s-util.yaml";' \
 	    -e 's;^\(my_rcfile=\).*;\1"$(ETCDIR)/k8s-util.rc";' <k8s-util.bash >tmpfile && \
 	    install -c -m 755 tmpfile $(DESTDIR)$(BINDIR)/k8s-util && \
 	    rm -f tmpfile
-	install -d $(DESTDIR)$(ETCDIR)
 	install -c -m 644 k8s-util.yaml $(DESTDIR)$(ETCDIR)/k8s-util.yaml
 	install -c -m 644 k8s-util.rc $(DESTDIR)$(ETCDIR)/k8s-util.rc
-	install -d $(DESTDIR)$(MANDIR)
 	install -c -m 644 k8s-util.1 $(DESTDIR)$(MANDIR)/k8s-util.1
 
 clean:
