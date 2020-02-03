@@ -3,9 +3,19 @@
 
 ## SYNOPSIS
 
-`eval` \``k8s-util` `env-docker` \[*hostname* `tcp`|`tls`|`ps`\]\`
-    
-`eval` \``k8s-util` `env-k8s` [*kubeconfig-file* | *hostname* [*username* [*context*]]]\`
+`k8s-util setup`
+
+`k8s-util configure-docker` url \[*docker-url*\]
+
+`k8s-util configure-docker` ca \[`-`|*ca-certificate-pem-file*\]
+
+`k8s-util configure-docker` cert \[`-`|*client-certificate-pem-file*\]
+
+`k8s-util configure-docker` key \[`-`|*client-key-pem-file*\]
+
+`k8s-util configure-k8s` `default`|*kubeconfig-name* `-`|*kubeconfig-file*
+
+`source <(k8s-util env)`
 
 `k8s-util` \[`-v`\] `namespace` *namespace* `create`|`delete`
 
@@ -15,16 +25,19 @@
 
 `k8s-util` \[`-v`\] `kubeconfig` [*namespace* *account* *context*]
 
+`k8s-util cleanup`
+
 ## DESCRIPTION
 
-This is a small utility for simplifying the management of access to a Kubernetes (K8S) cluster from an arbitrary GNU/Linux system.
-In particular, it allows you to...
+This is a small utility for simplifying the management of access to
+a Kubernetes (K8S) cluster from an arbitrary GNU/Linux system. In
+particular, it allows you to...
 
 - establish local a **docker(1)** and **docker-compose(1)** based *Docker* client
   environment, because developing and testing applications is usually done
   on just *Docker*.
 
-- establish a **kubectl(1)** and **helm(1)** based *Kubernetes* client
+- establish a **kubensx(1)**, **kubectl(1)** and **helm(1)** based *Kubernetes* client
   environment, because running applications finally requires access to a
   *Kubernetes* cluster.
 

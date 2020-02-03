@@ -42,7 +42,13 @@ fatal () {
 }
 
 #   path to configuration file
-my_config="$(dirname ${BASH_SOURCE})/k8s-util.yaml"
+my_config=${K8S_UTIL_YAMLFILE-"$(dirname ${BASH_SOURCE})/k8s-util.yaml"}
+
+#   path to run-command script
+my_rcfile=${K8S_UTIL_RCFILE-"$(dirname ${BASH_SOURCE})/k8s-util.rc"}
+
+#   path to run-time directory
+my_basedir=${K8S_UTIL_BASEDIR-"$HOME/.k8s-util.d"}
 
 #   fetch configuration
 conf () {
@@ -63,216 +69,146 @@ conf () {
     rm -f $tmpfile
 }
 
-#   establish Docker environment
-cmd_env_docker () {
-    #   a temporary storage area
-    local output="${TMPDIR-/tmp}/k8s-util.$$.tmp"
-    cp /dev/null $output
+#   copy content
+copy () {
+    local src="$1"
+    local dst="$2"
+    local mod="$3"
+    if [[ $src == "-" ]]; then
+        cat >"$dst"
+    else
+        cp "$src" "$dst"
+    fi
+    chmod $mod $dst
+}
 
-    #   provisioning base directory
-    local my_basedir="$HOME/.k8s-util.d"
+#   setup environment
+cmd_setup () {
+    #   create run-time directories
     if [[ ! -d "$my_basedir/bin" ]]; then
         ( umask 022 && mkdir -p "$my_basedir/bin" )
     fi
     if [[ ! -d "$my_basedir/etc/docker" ]]; then
         ( umask 022 && mkdir -p "$my_basedir/etc/docker" )
     fi
-
-    #   optionally extend the search path
-    if [[ ! "$PATH" =~ (^|:)"$my_basedir/bin"(:|$) ]]; then
-        echo "PATH=\"$my_basedir/bin:\$PATH\";" >>$output
-    fi
-
-    #   check for existence of docker(1) and docker-compose(1)
-    local which_docker=$(which docker)
-    local which_compose=$(which docker-compose)
-
-    #   optionally download docker(1) and docker-compose(1)
-    if [[ -z "$which_docker" || -z "$which_compose" ]]; then
-        #   ensure curl(1) is available
-        if [[ -z "$(which curl)" ]]; then
-            fatal "require curl(1) utility to download files"
-        fi
-
-        #   download docker(1)
-        if [[ -z "$which_docker" ]]; then
-            local docker_version=$(curl -sSkL https://github.com/docker/docker-ce/releases | \
-                egrep 'releases/tag/v[0-9.]*"' | sed -e 's;^.*releases/tag/v;;' -e 's;".*$;;' | head -1)
-            verbose "downloading docker(1) CLI (version $docker_version)"
-            curl -sSkL $(printf "%s%s" \
-                https://download.docker.com/linux/static/stable/x86_64/ \
-                docker-${docker_version}.tgz) | \
-                tar -z -x -f- --strip-components=1 -C $my_basedir/bin docker/docker
-            chmod 755 $my_basedir/bin/docker
-        fi
-
-        #   download docker-compose(1)
-        if [[ -z "$which_compose" ]]; then
-            local compose_version=$(curl -sSkL https://github.com/docker/compose/releases | \
-                egrep 'releases/tag/[0-9.]*"' | sed -e 's;^.*releases/tag/;;' -e 's;".*$;;' | head -1)
-            verbose "downloading docker-compose(1) CLI (version $compose_version)"
-            curl -sSkL $(printf "%s%s" \
-                https://github.com/docker/compose/releases/download/${compose_version}/ \
-                docker-compose-Linux-x86_64) -o $my_basedir/bin/docker-compose
-            chmod 755 $my_basedir/bin/docker-compose
-        fi
-    fi
-
-    #   optionally provision for remote access
-    if [[ $# -eq 2 ]]; then
-        local server="$1"
-        local kind="$2"
-
-        #   set docker(1) environment variables
-        if [[ $kind == "tcp" ]]; then
-            #   remote access via TCP
-            echo "export DOCKER_HOST=\"tcp://$server:2375\";" >>$output
-        elif [[ $kind == "tls" || $kind == "ps" ]]; then
-            #   remote access via TLS
-            echo "export DOCKER_HOST=\"tcp://$server:2376\";" >>$output
-            echo "export DOCKER_TLS=1;" >>$output
-            if [[ -z "$DOCKER_TLS_VERIFY" ]]; then
-                echo "export DOCKER_TLS_VERIFY=1;" >>$output
-            fi
-            if [[ -z "$DOCKER_CERT_PATH" ]]; then
-                echo "export DOCKER_CERT_PATH=\"$my_basedir/etc/docker\";" >>$output
-                DOCKER_CERT_PATH="$my_basedir/etc/docker"
-            fi
-            if [[ $kind == "ps" ]]; then
-                #   remote access via TLS in msg ProjectServer (PS) context
-                if [[ ! -f "$DOCKER_CERT_PATH/ca.pem" ]]; then
-                    verbose "fetching CA certificate"
-                    scp -q root@$server:/etc/docker/ca.crt $DOCKER_CERT_PATH/ca.pem
-                    chmod 600 $DOCKER_CERT_PATH/ca.pem
-                fi
-                if [[ ! -f "$DOCKER_CERT_PATH/cert.pem" ]]; then
-                    verbose "fetching client certificate"
-                    scp -q root@$server:/etc/docker/client.crt $DOCKER_CERT_PATH/cert.pem
-                    chmod 600 $DOCKER_CERT_PATH/cert.pem
-                fi
-                if [[ ! -f "$DOCKER_CERT_PATH/key.pem" ]]; then
-                    verbose "fetching client private key"
-                    scp -q root@$server:/etc/docker/client.key $DOCKER_CERT_PATH/key.pem
-                    chmod 600 $DOCKER_CERT_PATH/key.pem
-                fi
-            fi
-        fi
-    fi
-
-    #   provide output
-    cat $output
-    rm -f $output
-}
-
-#   establish Kubernetes environment
-cmd_env_k8s () {
-    #   a temporary storage area
-    local output="${TMPDIR-/tmp}/k8s-util.$$.tmp"
-    cp /dev/null $output
-
-    #   provisioning base directory
-    local my_basedir="$HOME/.k8s-util.d"
-    if [[ ! -d "$my_basedir/bin" ]]; then
-        ( umask 022 && mkdir -p "$my_basedir/bin" )
-    fi
     if [[ ! -d "$my_basedir/etc/k8s" ]]; then
         ( umask 022 && mkdir -p "$my_basedir/etc/k8s" )
     fi
 
-    #   optionally extend the search path
-    if [[ ! "$PATH" =~ (^|:)"$my_basedir/bin"(:|$) ]]; then
-        echo "PATH=\"$my_basedir/bin:\$PATH\";" >>$output
-    fi
-
-    #   check for existence of kubectl(1) and helm(1)
+    #   check for existence of essential tools
+    local which_docker=$(which docker)
+    local which_compose=$(which docker-compose)
     local which_kubensx=$(which kubensx)
     local which_kubectl=$(which kubectl)
     local which_helm=$(which helm)
     local which_jq=$(which jq)
 
-    #   optionally download kubectl(1) and helm(1)
-    if [[ -z "$which_kubensx" || -z "$which_kubectl" || -z "$which_helm" || -z "$which_jq" ]]; then
+    #   ensure curl(1) exists if one of the tools have to downloaded
+    if [[ -z "$which_docker" || -z "$which_compose" || \
+          -z "$which_kubensx" || -z "$which_kubectl" || -z "$which_helm" || -z "$which_jq" ]]; then
         #   ensure curl(1) is available
         if [[ -z "$(which curl)" ]]; then
-            fatal "require curl(1) utility to download files"
-        fi
-
-        #   download kubensx(1)
-        if [[ -z "$which_kubensx" ]]; then
-            local kubensx_version=$(curl -sSkL https://github.com/shyiko/kubensx/releases | \
-                egrep 'releases/tag/[0-9.]*"' | sed -e 's;^.*releases/tag/;;' -e 's;".*$;;' | head -1)
-            verbose "downloading kubensx(1) CLI (version $kubensx_version)"
-            curl -sSkL -o $my_basedir/bin/kubensx $(printf "%s%s" \
-                https://github.com/shyiko/kubensx/releases/download/ \
-                ${kubensx_version}/kubensx-${kubensx_version}-linux-amd64)
-            chmod 755 $my_basedir/bin/kubensx
-        fi
-
-        #   download kubectl(1)
-        if [[ -z "$which_kubectl" ]]; then
-            local kubernetes_version=$(curl -sSkL \
-                https://storage.googleapis.com/kubernetes-release/release/stable.txt)
-            verbose "downloading kubectl(1) CLI (version $kubernetes_version)"
-            curl -sSkL -o $my_basedir/bin/kubectl $(printf "%s%s" \
-                https://storage.googleapis.com/kubernetes-release/release/ \
-                ${kubernetes_version}/bin/linux/amd64/kubectl)
-            chmod 755 $my_basedir/bin/kubectl
-        fi
-
-        #   download helm(1)
-        if [[ -z "$which_helm" ]]; then
-            local helm_version=$(curl -sSkL https://github.com/kubernetes/helm/releases | \
-                egrep 'releases/tag/v[0-9.]*"' | sed -e 's;^.*releases/tag/v;;' -e 's;".*$;;' | head -1)
-            verbose "downloading helm(1) CLI (version $helm_version)"
-            curl -sSkL $(printf "%s%s" \
-                https://get.helm.sh/ \
-                helm-v${helm_version}-linux-amd64.tar.gz) | \
-                tar -z -x -f - --strip-components=1 -C $my_basedir/bin linux-amd64/helm
-            chmod 755 $my_basedir/bin/helm
-        fi
-
-        #   download jq(1)
-        if [[ -z "$which_jq" ]]; then
-            local jq_version=$(curl -sSkL https://github.com/stedolan/jq/releases | \
-                egrep 'releases/tag/jq-[0-9.]*"' | sed -e 's;^.*releases/tag/jq-;;' -e 's;".*$;;' | head -1)
-            verbose "downloading jq(1) CLI (version $jq_version)"
-            curl -sSkL -o $my_basedir/bin/jq $(printf "%s%s" \
-                https://github.com/stedolan/jq/releases/download/ \
-                jq-${jq_version}/jq-linux64)
-            chmod 755 $my_basedir/bin/jq
+            fatal "require curl(1) utility to download any tools"
         fi
     fi
 
-    #   install Bash tab completions
-    echo "source <(KUBECONFIG=/dev/null kubensx completion bash);" >>$output
-    echo "source <(KUBECONFIG=/dev/null kubectl completion bash);" >>$output
-    echo "source <(KUBECONFIG=/dev/null helm completion bash);" >>$output
-
-    #   optionally provision for remote access
-    if [[ $# -ge 1 ]]; then
-        if [[ $# -eq 1 && -f "$1" ]]; then
-            echo "export KUBECONFIG=\"$1\";" >>$output
-        else
-            #   provision for remote access in msg Project Server (PS) context
-            local server=$1
-            local username=${2-"admin"}
-            local contextname=${3-""}
-
-            #   expose Kubernetes access configuration
-            echo "export KUBECONFIG=\"$my_basedir/etc/k8s/kubeconfig.yaml\";" >>$output
-
-            #   optionally fetch Kubernetes access configuration
-            if [[ ! -f "$KUBECONFIG" ]]; then
-                verbose "fetching kubectl(1) access configuration"
-                ssh -q -t root@$server docker-stack exec ase-k3s \
-                    kubeconfig "${username}" "${contextname}" >"$my_basedir/etc/k8s/kubeconfig.yaml"
-            fi
-        fi
+    #   download docker(1)
+    if [[ -z "$which_docker" ]]; then
+        local docker_version=$(curl -sSkL https://github.com/docker/docker-ce/releases | \
+            egrep 'releases/tag/v[0-9.]*"' | sed -e 's;^.*releases/tag/v;;' -e 's;".*$;;' | head -1)
+        verbose "downloading docker(1) CLI (version $docker_version)"
+        curl -sSkL $(printf "%s%s" \
+            https://download.docker.com/linux/static/stable/x86_64/ \
+            docker-${docker_version}.tgz) | \
+            tar -z -x -f- --strip-components=1 -C $my_basedir/bin docker/docker
+        chmod 755 $my_basedir/bin/docker
     fi
 
-    #   provide output
-    cat $output
-    rm -f $output
+    #   download docker-compose(1)
+    if [[ -z "$which_compose" ]]; then
+        local compose_version=$(curl -sSkL https://github.com/docker/compose/releases | \
+            egrep 'releases/tag/[0-9.]*"' | sed -e 's;^.*releases/tag/;;' -e 's;".*$;;' | head -1)
+        verbose "downloading docker-compose(1) CLI (version $compose_version)"
+        curl -sSkL $(printf "%s%s" \
+            https://github.com/docker/compose/releases/download/${compose_version}/ \
+            docker-compose-Linux-x86_64) -o $my_basedir/bin/docker-compose
+        chmod 755 $my_basedir/bin/docker-compose
+    fi
+
+    #   download kubensx(1)
+    if [[ -z "$which_kubensx" ]]; then
+        local kubensx_version=$(curl -sSkL https://github.com/shyiko/kubensx/releases | \
+            egrep 'releases/tag/[0-9.]*"' | sed -e 's;^.*releases/tag/;;' -e 's;".*$;;' | head -1)
+        verbose "downloading kubensx(1) CLI (version $kubensx_version)"
+        curl -sSkL -o $my_basedir/bin/kubensx $(printf "%s%s" \
+            https://github.com/shyiko/kubensx/releases/download/ \
+            ${kubensx_version}/kubensx-${kubensx_version}-linux-amd64)
+        chmod 755 $my_basedir/bin/kubensx
+    fi
+
+    #   download kubectl(1)
+    if [[ -z "$which_kubectl" ]]; then
+        local kubernetes_version=$(curl -sSkL \
+            https://storage.googleapis.com/kubernetes-release/release/stable.txt)
+        verbose "downloading kubectl(1) CLI (version $kubernetes_version)"
+        curl -sSkL -o $my_basedir/bin/kubectl $(printf "%s%s" \
+            https://storage.googleapis.com/kubernetes-release/release/ \
+            ${kubernetes_version}/bin/linux/amd64/kubectl)
+        chmod 755 $my_basedir/bin/kubectl
+    fi
+
+    #   download helm(1)
+    if [[ -z "$which_helm" ]]; then
+        local helm_version=$(curl -sSkL https://github.com/kubernetes/helm/releases | \
+            egrep 'releases/tag/v[0-9.]*"' | sed -e 's;^.*releases/tag/v;;' -e 's;".*$;;' | head -1)
+        verbose "downloading helm(1) CLI (version $helm_version)"
+        curl -sSkL $(printf "%s%s" \
+            https://get.helm.sh/ \
+            helm-v${helm_version}-linux-amd64.tar.gz) | \
+            tar -z -x -f - --strip-components=1 -C $my_basedir/bin linux-amd64/helm
+        chmod 755 $my_basedir/bin/helm
+    fi
+
+    #   download jq(1)
+    if [[ -z "$which_jq" ]]; then
+        local jq_version=$(curl -sSkL https://github.com/stedolan/jq/releases | \
+            egrep 'releases/tag/jq-[0-9.]*"' | sed -e 's;^.*releases/tag/jq-;;' -e 's;".*$;;' | head -1)
+        verbose "downloading jq(1) CLI (version $jq_version)"
+        curl -sSkL -o $my_basedir/bin/jq $(printf "%s%s" \
+            https://github.com/stedolan/jq/releases/download/ \
+            jq-${jq_version}/jq-linux64)
+        chmod 755 $my_basedir/bin/jq
+    fi
+}
+
+#   cleanup environment
+cmd_cleanup () {
+    rm -rf "$my_basedir"
+}
+
+#   configure Docker files
+cmd_configure_docker () {
+    local key="$1"
+    local val="$2"
+    case "$key" in
+        url  ) echo "$val" >$my_basedir/etc/docker/url.txt ;;
+        ca   ) copy "$val" $my_basedir/etc/docker/ca.pem   0600 ;;
+        cert ) copy "$val" $my_basedir/etc/docker/cert.pem 0600 ;;
+        key  ) copy "$val" $my_basedir/etc/docker/key.pem  0600 ;;
+        *    ) fatal "unknown configuration part" ;;
+    esac
+}
+
+#   configure Kubernetes files
+cmd_configure_k8s () {
+    local key="$1"
+    local val="$2"
+    copy "$val" "$my_basedir/etc/k8s/$key" 0600
+}
+
+#   provide environment
+cmd_env () {
+    sed -e "s;\$my_basedir;$my_basedir;g" <$my_rcfile
 }
 
 #   create/delete namespace
@@ -409,8 +345,8 @@ if [[ $# -eq 0 ]]; then
     my_usage () {
         echo "k8s-util: USAGE: k8s-util $*" 1>&2
     }
-    my_usage "env-docker [<hostname> tcp|tls|ps]"
-    my_usage "env-k8s [<kubeconfig-file> | <hostname> [<username> [<context>]]]"
+    my_usage "env-docker [<docker-host-url>]"
+    my_usage "env-k8s [<kubeconfig-file>]"
     my_usage "namespace <namespace> create|delete"
     my_usage "cluster-admin <namespace> <account> create|delete"
     my_usage "namespace-admin <namespace> <account> create|delete"
