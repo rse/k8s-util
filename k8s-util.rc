@@ -28,8 +28,8 @@ if [[ ! "$PATH" =~ (^|:)"$my_basedir/bin"(:|$) ]]; then
 fi
 
 #   optionally set Docker host URL
-if [[ -f "$my_basedir/etc/docker/url" ]]; then
-    export DOCKER_HOST=`cat "$my_basedir/etc/docker/url"`
+if [[ -f "$my_basedir/etc/docker/url.txt" ]]; then
+    export DOCKER_HOST=`cat "$my_basedir/etc/docker/url.txt"`
 fi
 
 #   optionally configure Docker TLS credentials
