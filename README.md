@@ -51,11 +51,11 @@ $ make install [DESTDIR=/path] [PREFIX=/path]
 ```
 
 NOTICE: **k8s-util(1)** requires
-[bash(1)](https://www.gnu.org/software/bash/)),
+[bash(1)](https://www.gnu.org/software/bash/)) and
 [curl(1)](https://curl.haxx.se/) under run-time. The additionally
 required tools docker(1), docker-compose(1), kubensx(1), kubectl(1), helm(1) and
-jq(1) are automatically downloaded into `$HOME/.k8s-util/bin/` if
-requested by the `env-docker` or `env-k8s` commands.
+jq(1) are automatically downloaded into `$HOME/.k8s-util/bin/` when
+the `k8s-util setup` command is executed.
 
 Usage
 -----
@@ -64,15 +64,15 @@ Usage
 
 To establish your local client environment, use:
 
-    ```sh
-    $ k8s-util setup
-    ```
+```sh
+$ k8s-util setup
+```
 
 For later removing the local client environment again, use:
 
-    ```sh
-    $ k8s-util cleanup
-    ```
+```sh
+$ k8s-util cleanup
+```
 
 By default the environment is located in `$HOME/.k8s-util.d`.
 You can override this with the environment variable `$K8S_UTIL_BASEDIR`.
@@ -134,20 +134,18 @@ To configure your Kubernetes access, use:
 
 In order to use the established local environment, use:
 
-    ```sh
-    $ source <(k8s-util env)
-    ```
+```sh
+$ source <(k8s-util env)
+```
 
 ### Create Cluster Administration Service Account
 
 To create an internal Kubernetes cluster administrator service account, use:
 
-  - For regular Kubernetes contexts:
-
-    ```
-    $ k8s-util cluster-admin kube-system root create
-    $ k8s-util kubeconfig kube-system root root | k8s-util configure-k8s root -
-    ```
+```
+$ k8s-util cluster-admin kube-system root create
+$ k8s-util kubeconfig kube-system root root | k8s-util configure-k8s root -
+```
 
 ### Create Custom Namespace
 
