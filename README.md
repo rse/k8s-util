@@ -60,72 +60,83 @@ requested by the `env-docker` or `env-k8s` commands.
 Usage
 -----
 
-### Establish Docker Client Environment
+### Setup or Cleanup Client Environment
 
-To establish your local Docker client environment, use:
+To establish your local client environment, use:
+
+    ```sh
+    $ k8s-util setup
+    ```
+
+For later removing the local client environment again, use:
+
+    ```sh
+    $ k8s-util cleanup
+    ```
+
+By default the environment is located in `$HOME/.k8s-util.d`.
+You can override this with the environment variable `$K8S_UTIL_BASEDIR`.
+
+### Configure Docker Access
+
+To configure your Docker access, use:
 
   - For local access (via `/var/run/docker.sock`):
 
-    ```sh
-    $ eval `k8s-util env-docker`
-    ```
+    (just do nothing, this is the default)
 
   - For remote access (via HTTP):
 
     ```sh
-    $ eval `k8s-util env-docker <hostname> tcp`
+    $ k8s-util configure-docker url tcp://<hostname>:2375
     ```
 
   - For remote access (via HTTPS):
 
     ```sh
-    $ eval `k8s-util env-docker <hostname> tls`
-    $ cp <path-to-ca-cert>     $DOCKER_CERT_PATH/ca.pem
-    $ cp <path-to-client-cert> $DOCKER_CERT_PATH/cert.pem
-    $ cp <path-to-client-key>  $DOCKER_CERT_PATH/key.pem
+    $ k8s-util configure-docker url tcp://<hostname>:2376
+    $ k8s-util configure-docker ca   <path-to-ca-cert>
+    $ k8s-util configure-docker cert <path-to-client-cert>
+    $ k8s-util configure-docker key  <path-to-client-key>
     ```
 
-  - For remote access in [msg Project Server (PS)](https://ps.msg.team/) contexts
-    (this requires SSH access to the server to automatically
-    download the certificate/key files):
+### Configure Kubernetes Access
 
-    ```sh
-    $ eval `k8s-util env-docker <hostname> ps`
-    ```
-
-NOTICE: the `k8s-util env-docker` output has to be `eval`uated from
-within GNU Bash, because the command augments your shell environment
-with additional environment variables.
-
-### Establish Kubernetes Client Environment
-
-To establish your local Kubernetes environment, use:
+To configure your Kubernetes access, use:
 
   - For standard contexts (via existing `~/.kube/config`):
 
     ```sh
-    $ eval `k8s-util env-k8s`
+    $ k8s-util configure-k8s default ~/.kube/config
     ```
 
   - For custom contexts (via custom Kubernetes access configuration file):
 
     ```sh
-    $ eval `k8s-util env-k8s <kubeconfig-file>`
+    $ k8s-util configure-k8s default <kubeconfig-file>
     ```
 
-  - For [msg Project Server (PS)](https://ps.msg.team/) contexts (where `<hostname>` is the
-    hostname of the msg Project Server instance) where the K3S
-    Kubernetes stack (`ase-k3s`) was installed with `docker-stack
-    install ase-k3s` beforehand and `<username>` can be either the
-    K8S-external user `admin` or the K8S-internal user `root`:
+  - For using multiple contexts:
 
     ```sh
-    $ eval `k8s-util env-kubernetes <hostname> [<username>]`
+    $ k8s-util kubeconfig | k8s-util configure-k8s default -
+    $ k8s-util configure-k8s <user-1> <kubeconfig-file-1>
+    $ k8s-util configure-k8s <user-2> <kubeconfig-file-2>
+    $ k8s-util configure-k8s <user-3> <kubeconfig-file-3>
+    $ kubectl context use-context root
+    $ kubectl -o yaml version
+    $ kubectl get nodes
+    $ kubectl -n kube-system get all
+    $ kubectl --context sample get all
     ```
 
-NOTICE: the `k8s-util env-k8s` output has to be `eval`uated from
-within GNU Bash, because the command augments your shell environment
-with additional environment variables.
+### Provide Shell Environment
+
+In order to use the established local environment, use:
+
+    ```sh
+    $ source <(k8s-util env)
+    ```
 
 ### Create Cluster Administration Service Account
 
@@ -135,16 +146,7 @@ To create an internal Kubernetes cluster administrator service account, use:
 
     ```
     $ k8s-util cluster-admin kube-system root create
-    $ k8s-util kubeconfig kube-system root root >~/.kubeconfig-root
-    ```
-
-  - For [msg Project Server (PS)](https://ps.msg.team/) contexts where
-    the K3S Kubernetes stack (`ase-k3s`) was installed with `docker-stack
-    install ase-k3s` beforehand, the `root` service account is already
-    pre-established and you just have to execute:
-
-    ```
-    $ k8s-util kubeconfig kube-system root root >~/.kubeconfig-root
+    $ k8s-util kubeconfig kube-system root root | k8s-util configure-k8s root -
     ```
 
 ### Create Custom Namespace
@@ -156,29 +158,7 @@ application into it later, use:
 ```
 $ k8s-util namespace sample create
 $ k8s-util namespace-admin sample sample create
-$ k8s-util kubeconfig sample sample sample >~/.kubeconfig-sample
-```
-
-### Generate KUBECONFIG Configurations
-
-To access the Kubernetes cluster through one or more particular
-service accounts, assemble the `$KUBECONFIG` configurations with:
-
-```
-$ k8s-util kubeconfig-stub >~/.kubeconfig-stub.yaml
-$ k8s-util kubeconfig kube-system root root >~/.kubeconfig-root.yaml
-$ k8s-util kubeconfig sample sample sample >~/.kubeconfig-sample.yaml
-```
-
-Then use them like this:
-
-```
-$ export KUBECONFIG=~/.kubeconfig-stub.yaml:~/.kubeconfig-root.yaml:~/.kubeconfig-sample.yaml
-$ kubectl context use-context root
-$ kubectl -o yaml version
-$ kubectl get nodes
-$ kubectl -n kube-system get all
-$ kubectl --context sample get all
+$ k8s-util kubeconfig sample sample sample | k8s-util configure-k8s sample -
 ```
 
 License
