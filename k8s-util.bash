@@ -345,12 +345,18 @@ if [[ $# -eq 0 ]]; then
     my_usage () {
         echo "k8s-util: USAGE: k8s-util $*" 1>&2
     }
-    my_usage "env-docker [<docker-host-url>]"
-    my_usage "env-k8s [<kubeconfig-file>]"
+    my_usage "setup"
+    my_usage "configure-docker url  <docker-host-url>"
+    my_usage "configure-docker ca   <tls-client-ca-pem-file>"
+    my_usage "configure-docker cert <tls-client-cert-pem-file>"
+    my_usage "configure-docker key  <tls-client-key-pem-file>"
+    my_usage "configure-k8s <kubeconfig-file>"
+    my_usage "env"
     my_usage "namespace <namespace> create|delete"
     my_usage "cluster-admin <namespace> <account> create|delete"
     my_usage "namespace-admin <namespace> <account> create|delete"
     my_usage "kubeconfig [<namespace> <account> <context>]"
+    my_usage "cleanup"
     exit 1
 fi
 verbosity=false
