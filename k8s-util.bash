@@ -84,6 +84,12 @@ copy () {
 
 #   setup environment
 cmd_setup () {
+    #   allow downloading of programs to be enforced
+    local force="no"
+    if [[ $1 == "force" ]]; then
+        force=yes
+    fi
+
     #   create run-time directories
     if [[ ! -d "$my_basedir/bin" ]]; then
         ( umask 022 && mkdir -p "$my_basedir/bin" )
@@ -104,8 +110,13 @@ cmd_setup () {
     local which_jq=$(which jq)
 
     #   ensure curl(1) exists if one of the tools have to downloaded
-    if [[ -z "$which_docker" || -z "$which_compose" || \
-          -z "$which_kubensx" || -z "$which_kubectl" || -z "$which_helm" || -z "$which_jq" ]]; then
+    if [[ $force == "yes" || \
+          -z "$which_docker"   || \
+          -z "$which_compose"  || \
+          -z "$which_kubensx"  || \
+          -z "$which_kubectl"  || \
+          -z "$which_helm"     || \
+          -z "$which_jq"            ]]; then
         #   ensure curl(1) is available
         if [[ -z "$(which curl)" ]]; then
             fatal "require curl(1) utility to download any tools"
@@ -113,7 +124,7 @@ cmd_setup () {
     fi
 
     #   download docker(1)
-    if [[ -z "$which_docker" ]]; then
+    if [[ $force == "yes" || -z "$which_docker" ]]; then
         local docker_version=$(curl -sSkL https://github.com/docker/docker-ce/releases | \
             egrep 'releases/tag/v[0-9.]*"' | sed -e 's;^.*releases/tag/v;;' -e 's;".*$;;' | head -1)
         verbose "downloading docker(1) CLI (version $docker_version)"
@@ -125,7 +136,7 @@ cmd_setup () {
     fi
 
     #   download docker-compose(1)
-    if [[ -z "$which_compose" ]]; then
+    if [[ $force == "yes" || -z "$which_compose" ]]; then
         local compose_version=$(curl -sSkL https://github.com/docker/compose/releases | \
             egrep 'releases/tag/[0-9.]*"' | sed -e 's;^.*releases/tag/;;' -e 's;".*$;;' | head -1)
         verbose "downloading docker-compose(1) CLI (version $compose_version)"
@@ -136,7 +147,7 @@ cmd_setup () {
     fi
 
     #   download kubensx(1)
-    if [[ -z "$which_kubensx" ]]; then
+    if [[ $force == "yes" || -z "$which_kubensx" ]]; then
         local kubensx_version=$(curl -sSkL https://github.com/shyiko/kubensx/releases | \
             egrep 'releases/tag/[0-9.]*"' | sed -e 's;^.*releases/tag/;;' -e 's;".*$;;' | head -1)
         verbose "downloading kubensx(1) CLI (version $kubensx_version)"
@@ -147,7 +158,7 @@ cmd_setup () {
     fi
 
     #   download kubectl(1)
-    if [[ -z "$which_kubectl" ]]; then
+    if [[ $force == "yes" || -z "$which_kubectl" ]]; then
         local kubernetes_version=$(curl -sSkL \
             https://storage.googleapis.com/kubernetes-release/release/stable.txt)
         verbose "downloading kubectl(1) CLI (version $kubernetes_version)"
@@ -158,7 +169,7 @@ cmd_setup () {
     fi
 
     #   download helm(1)
-    if [[ -z "$which_helm" ]]; then
+    if [[ $force == "yes" || -z "$which_helm" ]]; then
         local helm_version=$(curl -sSkL https://github.com/kubernetes/helm/releases | \
             egrep 'releases/tag/v[0-9.]*"' | sed -e 's;^.*releases/tag/v;;' -e 's;".*$;;' | head -1)
         verbose "downloading helm(1) CLI (version $helm_version)"
@@ -170,7 +181,7 @@ cmd_setup () {
     fi
 
     #   download jq(1)
-    if [[ -z "$which_jq" ]]; then
+    if [[ $force == "yes" || -z "$which_jq" ]]; then
         local jq_version=$(curl -sSkL https://github.com/stedolan/jq/releases | \
             egrep 'releases/tag/jq-[0-9.]*"' | sed -e 's;^.*releases/tag/jq-;;' -e 's;".*$;;' | head -1)
         verbose "downloading jq(1) CLI (version $jq_version)"
@@ -345,7 +356,7 @@ if [[ $# -eq 0 ]]; then
     my_usage () {
         echo "k8s-util: USAGE: k8s-util $*" 1>&2
     }
-    my_usage "setup"
+    my_usage "setup [force]"
     my_usage "configure-docker url  <docker-host-url>"
     my_usage "configure-docker ca   <tls-client-ca-pem-file>"
     my_usage "configure-docker cert <tls-client-cert-pem-file>"
