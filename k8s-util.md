@@ -3,7 +3,7 @@
 
 ## SYNOPSIS
 
-`k8s-util setup`
+`k8s-util setup [force]`
 
 `k8s-util configure-docker` url \[*docker-url*\]
 
