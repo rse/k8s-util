@@ -17,6 +17,8 @@
 
 `source <(k8s-util env)`
 
+`k8s-util \[`-v`\] `dump` *namespace* [*kubectl-get-options*]
+
 `k8s-util` \[`-v`\] `namespace` *namespace* `create`|`delete`
 
 `k8s-util` \[`-v`\] `cluster-admin` *namespace* *account* `create`|`delete`

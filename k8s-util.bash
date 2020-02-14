@@ -222,6 +222,26 @@ cmd_env () {
     sed -e "s;\$my_basedir;$my_basedir;g" <$my_rcfile
 }
 
+#   dump all K8S objects of a namespace
+cmd_dump () {
+    #   handle command-line arguments
+    my_usage () {
+        usage "$1" "dump <namespace> [<kubectl-get-options>]"
+    }
+    if [[ $# -lt 1 ]]; then
+        my_usage "invalid number of arguments"
+    fi
+    ns="$1"; shift
+    for name in $(kubectl -n "$ns" api-resources -o name --namespaced=true); do
+        local out=$(kubectl -n "$ns" get "$name" --ignore-not-found "$@" 2>/dev/null)
+        if [[ -n $out ]]; then
+            echo "# ----( ${name} )----"
+            echo "$out"
+            echo ""
+        fi
+    done
+}
+
 #   create/delete namespace
 cmd_namespace () {
     #   handle command-line arguments
@@ -363,6 +383,7 @@ if [[ $# -eq 0 ]]; then
     my_usage "configure-docker key  <tls-client-key-pem-file>"
     my_usage "configure-k8s <kubeconfig-file>"
     my_usage "env"
+    my_usage "dump <namespace> [<kubectl-get-options>]"
     my_usage "namespace <namespace> create|delete"
     my_usage "cluster-admin <namespace> <account> create|delete"
     my_usage "namespace-admin <namespace> <account> create|delete"
