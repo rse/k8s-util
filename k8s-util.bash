@@ -366,11 +366,6 @@ cmd_kubeconfig () {
     fi
 }
 
-#   ensure the required tool is available
-if [[ -z "$(which kubectl)" ]]; then
-    fatal "require kubectl(1) in \$PATH"
-fi
-
 #   dispatch according to command
 if [[ $# -eq 0 ]]; then
     my_usage () {
