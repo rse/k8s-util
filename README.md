@@ -25,7 +25,8 @@ GNU/Linux (x64) system. In particular, it allows you to...
   because applications should be deployed into their own dedicated Kubernetes namespace.
 
 - generate the `$KUBECONFIG` configurations for using service accounts,
-  because **kubectl(1)** and **helm(1)** require those standardized access configurations.
+  because **kubectl(1)**, **kubensx(1)** and **helm(1)** require those
+  standardized access configurations.
 
 Short Background
 ----------------
@@ -38,7 +39,7 @@ are primarily driven by four command-line client programs:
 | Docker     | **docker(1)**            | **docker-compose(1)**   |
 | Kubernetes | **kubectl(1)**           | **helm(1)**             |
 
-As a consequence, when developing and deploying in a Kubernetes
+As a consequence, when developing and deploying software in a Kubernetes
 environment, those four client programs and their configurations are
 essential. This is what **k8s-util(1)** deals with.
 
@@ -51,11 +52,12 @@ $ make install [DESTDIR=/path] [PREFIX=/path]
 ```
 
 NOTICE: **k8s-util(1)** requires
-[bash(1)](https://www.gnu.org/software/bash/) and
-[curl(1)](https://curl.haxx.se/) under run-time. The additionally
-required tools docker(1), docker-compose(1), kubensx(1), kubectl(1), helm(1) and
-jq(1) are automatically downloaded into `$HOME/.k8s-util/bin/` when
-the `k8s-util setup` command is executed.
+[**bash(1)**](https://www.gnu.org/software/bash/) and
+[**curl(1)**](https://curl.haxx.se/) under run-time. The additionally
+required tools **docker(1)**, **docker-compose(1)**, **kubensx(1)**,
+**kubectl(1)**, **helm(1)** and **jq(1)** are automatically downloaded
+into `$HOME/.k8s-util/bin/` when the `k8s-util setup` command is
+executed.
 
 Usage
 -----
@@ -65,7 +67,7 @@ Usage
 To establish your local client environment, use:
 
 ```sh
-$ k8s-util setup
+$ k8s-util setup [force]
 ```
 
 For later removing the local client environment again, use:
@@ -74,8 +76,18 @@ For later removing the local client environment again, use:
 $ k8s-util cleanup
 ```
 
-By default the environment is located in `$HOME/.k8s-util.d`.
-You can override this with the environment variable `$K8S_UTIL_BASEDIR`.
+By default the environment is located in `$HOME/.k8s-util.d`. You
+can override this with the environment variable `$K8S_UTIL_BASEDIR`.
+In case you are not under a GNU/Linux (x64) system, ensure that the
+required tools **docker(1)**, **docker-compose(1)**, **kubensx(1)**,
+**kubectl(1)**, **helm(1)** and **jq(1)** are already existing in your
+`$PATH` beforehand.
+
+If you use the additional `force` argument to `k8s-util setup`, you
+can enfore the downloading of the (latest versions of the) tools
+**docker(1)**, **docker-compose(1)**, **kubensx(1)**, **kubectl(1)**,
+**helm(1)** and **jq(1)** in case your `$PATH` already provides (older
+versions of) those tools.
 
 ### Configure Docker Access
 
@@ -123,11 +135,6 @@ To configure your Kubernetes access, use:
     $ k8s-util configure-k8s <user-1> <kubeconfig-file-1>
     $ k8s-util configure-k8s <user-2> <kubeconfig-file-2>
     $ k8s-util configure-k8s <user-3> <kubeconfig-file-3>
-    $ kubectl context use-context root
-    $ kubectl -o yaml version
-    $ kubectl get nodes
-    $ kubectl -n kube-system get all
-    $ kubectl --context sample get all
     ```
 
 ### Provide Shell Environment
@@ -140,7 +147,7 @@ $ source <(k8s-util env)
 
 ### Create Cluster Administration Service Account
 
-To create an internal Kubernetes cluster administrator service account, use:
+To create and use an internal Kubernetes cluster administrator service account, use:
 
 ```
 $ k8s-util cluster-admin kube-system root create
@@ -149,7 +156,7 @@ $ k8s-util kubeconfig kube-system root root | k8s-util configure-k8s root -
 
 ### Create Custom Namespace
 
-To create a custom namespace `sample` and corresponding namespace
+To create and use a custom namespace `sample` and corresponding namespace
 administration service account `sample` in order to deploy an
 application into it later, use:
 
