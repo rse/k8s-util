@@ -31,19 +31,30 @@ DESTDIR =
 all: k8s-util.1
 
 k8s-util.1: k8s-util.md
-	@if [ ! -d node_modules ]; then npm install remark-cli remark remark-man; fi
+	@if [ ! -d node_modules ]; then \
+	    echo "++ installing remark(1) utility"; \
+	    npm install remark-cli remark remark-man; \
+	fi
+	@echo "++ generating manpage k8s-util(1)"; \
 	npx remark --use remark-man --output k8s-util.1 k8s-util.md
 
 install: k8s-util.1
+	@echo "++ install: [DIR]  $(DESTDIR)$(BINDIR)"; \
 	install -d $(DESTDIR)$(BINDIR)
+	@echo "++ install: [DIR]  $(DESTDIR)$(ETCDIR)"; \
 	install -d $(DESTDIR)$(ETCDIR)
+	@echo "++ install: [DIR]  $(DESTDIR)$(MANDIR)"; \
 	install -d $(DESTDIR)$(MANDIR)
+	@echo "++ install: [FILE] $(DESTDIR)$(BINDIR)/k8s-util"; \
 	sed -e 's;^\(my_config=\).*;\1"$(ETCDIR)/k8s-util.yaml";' \
 	    -e 's;^\(my_rcfile=\).*;\1"$(ETCDIR)/k8s-util.rc";' <k8s-util.bash >tmpfile && \
 	    install -c -m 755 tmpfile $(DESTDIR)$(BINDIR)/k8s-util && \
 	    rm -f tmpfile
+	@echo "++ install: [FILE] $(DESTDIR)$(ETCDIR)/k8s-util.yaml"; \
 	install -c -m 644 k8s-util.yaml $(DESTDIR)$(ETCDIR)/k8s-util.yaml
+	@echo "++ install: [FILE] $(DESTDIR)$(ETCDIR)/k8s-util.rc"; \
 	install -c -m 644 k8s-util.rc $(DESTDIR)$(ETCDIR)/k8s-util.rc
+	@echo "++ install: [FILE] $(DESTDIR)$(MANDIR)/k8s-util.1"; \
 	install -c -m 644 k8s-util.1 $(DESTDIR)$(MANDIR)/k8s-util.1
 
 clean:
