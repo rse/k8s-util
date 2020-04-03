@@ -171,7 +171,7 @@ cmd_setup () {
     #   download helm(1)
     if [[ $force == "yes" || -z "$which_helm" ]]; then
         local helm_version=$(curl -sSkL https://github.com/kubernetes/helm/releases | \
-            egrep 'releases/tag/v[0-9.]*"' | sed -e 's;^.*releases/tag/v;;' -e 's;".*$;;' | head -1)
+            egrep 'releases/tag/v3\.[0-9.]*"' | sed -e 's;^.*releases/tag/v;;' -e 's;".*$;;' | head -1)
         verbose "downloading helm(1) CLI (version $helm_version)"
         curl -sSkL $(printf "%s%s" \
             https://get.helm.sh/ \
