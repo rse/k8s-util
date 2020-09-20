@@ -42,9 +42,13 @@ case "$DOCKER_HOST" in
 esac
 
 #   install Kubernetes command completions
-source <(KUBECONFIG=/dev/null kubensx completion bash)
-source <(KUBECONFIG=/dev/null kubectl completion bash)
-source <(KUBECONFIG=/dev/null helm completion bash)
+_tmpfile="${TMPDIR-/tmp}/k8s-util.$$.conf.tmp"
+(umask 077; echo "" >"$_tmpfile")
+source <(KUBECONFIG="$_tmpfile" kubensx completion bash)
+source <(KUBECONFIG="$_tmpfile" kubectl completion bash)
+source <(KUBECONFIG="$_tmpfile" helm    completion bash)
+rm -f $_tmpfile
+unset _tmpfile
 
 #   optionally configure Kubernetes acccess configuration
 export KUBECONFIG=""
@@ -52,6 +56,9 @@ if [[ -f "$my_basedir/etc/k8s/default" ]]; then
     KUBECONFIG="$my_basedir/etc/k8s/default"
 fi
 for config in $my_basedir/etc/k8s/*; do
+    if [[ $config == "$my_basedir/etc/k8s/*" ]]; then
+        continue
+    fi
     if [[ $config == "$my_basedir/etc/k8s/default" ]]; then
         continue
     fi
